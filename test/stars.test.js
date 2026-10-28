@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { fakeContext } from './fake-canvas.js';
 import { layout } from '../src/city.js';
-import { SHOOTING_DURATION, SHOOTING_PERIOD, shootingStar, STAR_COUNT, starPositions, twinkle } from '../src/elements/stars.js';
+import { draw, SHOOTING_DURATION, SHOOTING_PERIOD, shootingStar, STAR_COUNT, starPositions, twinkle } from '../src/elements/stars.js';
 
 const at = (time, w = 1280, h = 720) => ({ ...layout(w, h), time });
 
@@ -19,8 +20,22 @@ describe('stars', () => {
     }
   });
 
-  it('is the same on every reload', () => {
-    expect(starPositions(at(0, 800, 600))).toEqual(starPositions(at(5, 800, 600)));
+  it('is the same on every reload', async () => {
+    const before = starPositions(at(0, 800, 600));
+    vi.resetModules();
+    const reloaded = await import('../src/elements/stars.js');
+    const after = reloaded.starPositions(at(0, 800, 600));
+    expect(after).not.toBe(before);
+    expect(after).toEqual(before);
+  });
+
+  it('builds the shooting-star gradient once, not every frame', () => {
+    const ctx = fakeContext();
+    let created = 0;
+    const create = ctx.createLinearGradient;
+    ctx.createLinearGradient = (...args) => (created++, create(...args));
+    for (let f = 0; f < 120; f++) draw(ctx, at(f / 60));
+    expect(created).toBe(1);
   });
 
   it('twinkles between dim and bright', () => {

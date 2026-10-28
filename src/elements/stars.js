@@ -78,15 +78,25 @@ export function draw(ctx, scene) {
 
   const shot = shootingStar(scene);
   if (!shot) return;
-  const unit = Math.min(scene.width, scene.height) * 0.0025;
-  const g = ctx.createLinearGradient(shot.tailX, shot.tailY, shot.x, shot.y);
-  g.addColorStop(0, 'rgba(255, 255, 255, 0)');
-  g.addColorStop(1, `rgba(255, 255, 255, ${shot.alpha.toFixed(3)})`);
-  ctx.strokeStyle = g;
-  ctx.lineWidth = Math.max(1, unit * 1.2);
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(shot.tailX, shot.tailY);
-  ctx.lineTo(shot.x, shot.y);
-  ctx.stroke();
+  const tail = Math.hypot(shot.x - shot.tailX, shot.y - shot.tailY);
+  if (tail < 0.5) return;
+  const width = Math.max(1, Math.min(scene.width, scene.height) * 0.003);
+  ctx.globalAlpha = shot.alpha;
+  ctx.fillStyle = trail(ctx);
+  ctx.translate(shot.x, shot.y);
+  ctx.rotate(Math.atan2(shot.y - shot.tailY, shot.x - shot.tailX));
+  ctx.scale(tail, 1);
+  ctx.fillRect(-1, -width / 2, 1, width);
+}
+
+// The tail as a unit-length gradient ending at the origin, built once per context and drawn under a transform.
+let trailCache = null;
+
+function trail(ctx) {
+  if (trailCache && trailCache.ctx === ctx) return trailCache.gradient;
+  const gradient = ctx.createLinearGradient(-1, 0, 0, 0);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 1)');
+  trailCache = { ctx, gradient };
+  return gradient;
 }
