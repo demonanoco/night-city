@@ -1,5 +1,7 @@
 // A neon billboard on a rooftop near the middle of the city, showing the last merged pull request.
 
+import { random } from '../city.js';
+
 export const layer = 'city';
 
 const FALLBACK = 'Night City';
@@ -28,21 +30,33 @@ export function textOffset(time, textWidth, boxWidth, speed, gap) {
   return -((time * speed) % (textWidth + gap));
 }
 
+// A brief dip in brightness once per FLICKER_PERIOD seconds, at a different moment in each period.
+const FLICKER_PERIOD = 4;
+const FLICKER_LENGTH = 0.12;
+export function flickerAlpha(time) {
+  const period = Math.floor(time / FLICKER_PERIOD);
+  const start = random(period) * (FLICKER_PERIOD - FLICKER_LENGTH);
+  const t = time - period * FLICKER_PERIOD;
+  return t >= start && t < start + FLICKER_LENGTH ? 0.6 : 1;
+}
+
 let board = null;
 let measured = { text: null, font: null, width: 0 };
 
-function place(scene) {
+// Board geometry: a panel overhanging the roof slightly, on two struts that stand on the roof.
+export function place(scene) {
   const b = pickBuilding(scene);
   if (!b) return null;
-  const width = Math.max(b.width * 1.5, scene.width * 0.13);
-  const height = width * 0.3;
+  const width = b.width * 1.2;
+  const height = width * 0.38;
   const x = b.x + b.width / 2 - width / 2;
   const legs = height * 0.45;
   const y = b.y - legs - height;
   const pad = height * 0.14;
   const fontSize = Math.round(height * 0.5);
+  const struts = [b.x + b.width * 0.25, b.x + b.width * 0.75];
   return {
-    scene, b, x, y, width, height, legs, pad,
+    scene, b, x, y, width, height, legs, pad, struts,
     font: `bold ${fontSize}px "Courier New", monospace`,
     speed: fontSize * 4,
     gap: fontSize * 3,
@@ -53,12 +67,12 @@ function place(scene) {
 export function draw(ctx, scene) {
   if (board?.scene !== scene) board = place(scene);
   if (!board) return;
-  const { x, y, width, height, legs, pad, font, speed, gap, line } = board;
+  const { x, y, width, height, legs, pad, struts, font, speed, gap, line } = board;
 
-  // Struts down to the roof.
+  // Struts down to the roof, with a cross brace between them.
   ctx.fillStyle = '#1a1f2c';
-  for (const f of [0.2, 0.8]) ctx.fillRect(x + width * f - line, y + height, line * 2, legs);
-  ctx.fillRect(x + width * 0.15, y + height + legs * 0.45, width * 0.7, line);
+  for (const sx of struts) ctx.fillRect(sx - line, y + height, line * 2, legs);
+  ctx.fillRect(struts[0], y + height + legs * 0.45, struts[1] - struts[0], line);
 
   // Panel and neon frame.
   ctx.fillStyle = '#07080f';
@@ -81,8 +95,7 @@ export function draw(ctx, scene) {
   ctx.rect(x + pad, y, inner, height);
   ctx.clip();
   // A faint flicker now and then, like a real tube.
-  const flicker = Math.sin(scene.time * 31) > 0.97 ? 0.6 : 1;
-  ctx.globalAlpha = flicker;
+  ctx.globalAlpha = flickerAlpha(scene.time);
   ctx.shadowColor = '#2ff3ff';
   ctx.fillStyle = '#b8fbff';
   ctx.textBaseline = 'middle';
