@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sprint-team-worker",
+  "version": "1.0.0",
+  "description": "Takes one Jira ticket at a time and delivers it as a tested pull request, working in a worktree from the latest main",
+  "extensions": {
+    "ai.nanoco.nanoclaw": {
+      "agentName": "Worker"
+    }
+  }
+}

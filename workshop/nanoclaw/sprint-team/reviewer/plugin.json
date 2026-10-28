@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sprint-team-reviewer",
+  "version": "1.0.0",
+  "description": "Reviews each pull request against its Jira ticket and the repo's AGENTS.md, runs the tests, and reports ready or changes needed",
+  "extensions": {
+    "ai.nanoco.nanoclaw": {
+      "agentName": "Reviewer"
+    }
+  }
+}

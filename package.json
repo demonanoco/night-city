@@ -1,0 +1,18 @@
+{
+  "name": "night-city",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/start.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

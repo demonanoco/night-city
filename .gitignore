@@ -1,0 +1,4 @@
+node_modules/
+dist/
+public/last-merge.json
+.worktrees/

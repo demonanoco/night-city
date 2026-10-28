@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sprint-team-orchestrator",
+  "version": "1.0.0",
+  "description": "Leads a small team of coding agents on one GitHub repo: picks up Jira tickets, assigns them to workers, routes reviews, and merges only when the owner says so",
+  "extensions": {
+    "ai.nanoco.nanoclaw": {
+      "agentName": "Maya (Lead)"
+    }
+  }
+}
